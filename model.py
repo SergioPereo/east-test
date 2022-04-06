@@ -1,13 +1,14 @@
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 import numpy as np
 
-from tensorflow.contrib import slim
+import tf_slim as slim
 
-tf.app.flags.DEFINE_integer('text_scale', 512, '')
+tf.compat.v1.flags.DEFINE_integer('text_scale', 512, '')
 
 from nets import resnet_v1
 
-FLAGS = tf.app.flags.FLAGS
+FLAGS = tf.compat.v1.flags.FLAGS
 
 
 def unpool(inputs):

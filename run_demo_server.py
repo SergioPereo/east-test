@@ -35,7 +35,8 @@ def get_host_info():
 @functools.lru_cache(maxsize=100)
 def get_predictor(checkpoint_path):
     logger.info('loading model')
-    import tensorflow as tf
+    import tensorflow.compat.v1 as tf
+    tf.disable_v2_behavior()
     import model
     from icdar import restore_rectangle
     import lanms
@@ -133,7 +134,7 @@ def get_predictor(checkpoint_path):
             'rtparams': rtparams,
             'timing': timer,
         }
-        ret.update(get_host_info())
+        #ret.update(get_host_info())
         return ret
 
 
@@ -160,6 +161,7 @@ def index():
 
 
 def draw_illu(illu, rst):
+    print(rst['text_lines'])
     for t in rst['text_lines']:
         d = np.array([t['x0'], t['y0'], t['x1'], t['y1'], t['x2'],
                       t['y2'], t['x3'], t['y3']], dtype='int32')
@@ -202,7 +204,7 @@ def index_post():
     request.files['image'].save(bio)
     img = cv2.imdecode(np.frombuffer(bio.getvalue(), dtype='uint8'), 1)
     rst = get_predictor(checkpoint_path)(img)
-
+    print(rst)
     save_result(img, rst)
     return render_template('index.html', session_id=rst['session_id'])
 
@@ -213,11 +215,11 @@ def main():
     parser.add_argument('--port', default=8769, type=int)
     parser.add_argument('--checkpoint_path', default=checkpoint_path)
     args = parser.parse_args()
-    checkpoint_path = args.checkpoint_path
+    checkpoint_path = os.path.join(os.path.join(os.getcwd(),"pretrain"), "east_icdar2015_resnet_v1_50_rbox")
 
-    if not os.path.exists(args.checkpoint_path):
+    if not os.path.exists(os.path.join(os.getcwd(),checkpoint_path)):
         raise RuntimeError(
-            'Checkpoint `{}` not found'.format(args.checkpoint_path))
+            'Checkpoint `{}` not found'.format(os.path.join(os.getcwd(),checkpoint_path)))
 
     app.debug = False  # change this to True if you want to debug
     app.run('0.0.0.0', args.port)
